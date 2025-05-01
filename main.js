@@ -4,35 +4,21 @@ class MainMenu extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('MM_Background', 'Assets/Main%20Menu/MM_Background.png');
-    this.load.image('DDM_Logo', 'Assets/Main%20Menu/DDM_Logo.png');
-    this.load.image('Start_Button', 'Assets/Main%20Menu/Start_Button.png');
-    this.load.image('Quit_Button', 'Assets/Main%20Menu/Quit_Button.png');
-    this.load.image('Settings_Button', 'Assets/Main%20Menu/Settings_Button.png');
-    this.load.image('UI_Short', 'Assets/Main%20Menu/UI_Short.png');
-    this.load.image('Sound_Bar', 'Assets/Main%20Menu/Sound_Bar.png');
-    this.load.image('Sound_Toggle', 'Assets/Main%20Menu/Sound_Toggle.png');
-    this.load.image('Settings_Close', 'Assets/Main%20Menu/Settings_Close.png');
-    this.load.audio('Water_Sound', 'Assets/Main%20Menu/Water_Sound.mp3');
-    this.load.spritesheet('Bubble_Sheet', 'Assets/Main%20Menu/Bubble_Sheet.png', {
-      frameWidth: 1920,
-      frameHeight: 1080
-    });
-    for (let i = 1; i <= 8; i++) {
-      this.load.image(`BG${i}`, `Assets/Game%20Scene/BG${i}.png`);
-    }
-    this.load.image('PG_Fish_Book', 'Assets/Game%20Scene/PG_Fish_Book.png');
-    this.load.image('PG_Shopping_Cart', 'Assets/Game%20Scene/PG_Shopping_Cart.png');
-
-    this.load.image('Char_throw', 'Assets/Game%20Scene/Char_throw.png');
-    this.load.image('Char_throw2', 'Assets/Game%20Scene/Char_throw2.png');
-    this.load.image('Char_idle1', 'Assets/Game%20Scene/Char_idle1.png');
-    this.load.image('Char_idle2', 'Assets/Game%20Scene/Char_idle2.png');
-    this.load.image('Select_1', 'Assets/Game%20Scene/Select_1.png');
-    this.load.image('Select_2', 'Assets/Game%20Scene/Select_2.png');
+    // Load menu assets
+    this.load.atlas('menu', 'Assets/MainMenu/Menu_Spritesheet.png', 'Assets/MainMenu/Menu_Spritesheet.json');
+    this.load.audio('Water_Sound', 'Assets/MainMenu/Water_Sound.mp3');
   }
 
   create() {
+    // Create menu elements using the atlas
+    this.add.sprite(960, 540, 'menu', 'MM_Background.png').setDepth(-3);
+    this.add.sprite(960, 250, 'menu', 'DDM_Logo.png').setDepth(1);
+
+    // Menu buttons
+    const startButton = this.add.sprite(960, 500, 'menu', 'Start_Button.png')
+      .setInteractive()
+      .on('pointerup', () => this.scene.start('FishingScene'));
+ create() {
     this.swayTime = 0;
     this.add.image(960, 540, 'MM_Background').setDepth(-3);
 
@@ -139,334 +125,103 @@ class FishingScene extends Phaser.Scene {
   constructor() {
     super('FishingScene');
     this.fishTypes = [
-      { name: 'Goldfish', points: 10, rarity: 0.4, texture: 'fish1' },
-      { name: 'Trout', points: 30, rarity: 0.3, texture: 'fish2' },
-      { name: 'Bass', points: 50, rarity: 0.2, texture: 'fish3' },
-      { name: 'Legendary', points: 100, rarity: 0.1, texture: 'fish4' }
+      { name: 'Goldfish', points: 10, rarity: 0.4, frame: 'fish1.png' },
+      { name: 'Trout', points: 30, rarity: 0.3, frame: 'fish2.png' },
+      { name: 'Bass', points: 50, rarity: 0.2, frame: 'fish3.png' }
     ];
-    this.score = 0;
-    this.inventory = [];
   }
 
   preload() {
-    // Load fishing-related assets
-    for (let i = 1; i <= 8; i++) {
-      this.load.image(`BG${i}`, `Assets/Game%20Scene/BG${i}.png`);
-    }
-    
-    // Character sprites
-    this.load.image('Char_idle1', 'Assets/Game%20Scene/Char_idle1.png');
-    this.load.image('Char_idle2', 'Assets/Game%20Scene/Char_idle2.png');
-    this.load.image('Char_throw', 'Assets/Game%20Scene/Char_throw.png');
-    this.load.image('Char_throw2', 'Assets/Game%20Scene/Char_throw2.png');
-    this.load.image('Char_reel', 'Assets/Game%20Scene/Char_reel.png');
-    this.load.image('Char_catch', 'Assets/Game%20Scene/Char_catch.png');
-    
-    // UI elements
-    this.load.image('Select_1', 'Assets/Game%20Scene/Select_1.png');
-    this.load.image('Select_2', 'Assets/Game%20Scene/Select_2.png');
-    this.load.image('PG_Fish_Book', 'Assets/Game%20Scene/PG_Fish_Book.png');
-    this.load.image('PG_Shopping_Cart', 'Assets/Game%20Scene/PG_Shopping_Cart.png');
-    
-    // Fishing elements
-    this.load.image('fishing_line', 'Assets/Game%20Scene/fishing_line.png');
-    this.load.image('fishing_bobber', 'Assets/Game%20Scene/fishing_bobber.png');
-    for (let i = 1; i <= 4; i++) {
-      this.load.image(`fish${i}`, `Assets/Game%20Scene/fish${i}.png`);
-    }
-    this.load.image('splash', 'Assets/Game%20Scene/splash.png');
+    this.load.atlas('game', 'Assets/GameScene/Game_Spritesheet.png', 'Assets/GameScene/Game_Spritesheet.json');
+    this.load.atlas('characters', 'Assets/GameScene/Char_Spritesheet.png', 'Assets/GameScene/CharSheet.json');
+    this.load.atlas('fish', 'Assets/GameScene/Fish_Spritesheet.png', 'Assets/GameScene/FishSheet.json');
   }
 
   create() {
-    // Setup background (same as NextScene)
-    const cx = this.cameras.main.centerX;
-    const cy = this.cameras.main.centerY;
-
-    this.add.image(cx, cy, 'BG1').setDisplaySize(this.scale.width, this.scale.height).setDepth(1);
-    this.sun = this.add.image(cx + 250, cy - 300, 'BG4').setScale(0.8).setDepth(4);
-    this.tweens.add({ targets: this.sun, alpha: { from: 1, to: 0.7 }, duration: 2000, yoyo: true, repeat: -1 });
-
-    this.clouds = this.add.image(cx, cy - 100, 'BG5').setDepth(5);
-    this.trees = this.add.image(cx, cy, 'BG2').setDepth(2);
-    this.add.image(cx, cy, 'BG3').setDepth(3);
-    this.foilage = this.add.image(cx, cy, 'BG6').setDepth(6);
-    this.add.image(cx, cy, 'BG7').setDepth(7);
-    this.add.image(cx, cy, 'BG8').setDepth(8);
-
+    // Setup background using atlas
+    this.setupBackground();
+    
+    // Create character with animations
+    this.setupCharacter();
+    
+    // Setup fishing mechanics
+    this.setupFishing();
+    
     // Create UI
     this.createUI();
-    
-    // Create character
-    this.char = this.add.image(cx, cy + 100, 'Char_idle1').setDepth(9);
-    this.idleState = 0;
-    
-    // Create idle animation
-    this.time.addEvent({
-      delay: 800,
-      callback: () => {
-        if (this.gameState === 'idle') {
-          this.idleState = 1 - this.idleState;
-          this.char.setTexture(this.idleState === 0 ? 'Char_idle1' : 'Char_idle2');
-        }
-      },
-      loop: true
-    });
-    
-    // Fishing elements
-    this.fishingLine = this.add.image(cx, cy + 100, 'fishing_line').setVisible(false).setDepth(8);
-    this.bobber = this.add.image(cx, cy + 200, 'fishing_bobber').setVisible(false).setDepth(8);
-    
-    // Game state
-    this.gameState = 'idle'; // 'idle', 'casting', 'waiting', 'reeling', 'caught'
-    
-    // Score text
-    this.scoreText = this.add.text(50, 50, 'Score: 0', { 
-      fontSize: '32px', 
-      color: '#ffffff',
-      stroke: '#000000',
-      strokeThickness: 4
-    }).setDepth(20);
-    
-    // Set up fishing interaction
-    this.setupFishing();
   }
-  
-  createUI() {
-    const book = this.add.image(0, 0, 'PG_Fish_Book')
-      .setOrigin(1, 1)
-      .setScale(0.5)
-      .setInteractive()
-      .setDepth(10);
-    const cart = this.add.image(0, 0, 'PG_Shopping_Cart')
-      .setOrigin(1, 1)
-      .setScale(0.5)
-      .setInteractive()
-      .setDepth(10);
-    
-    cart.setPosition(this.cameras.main.width - 40, this.cameras.main.height - 40);
-    book.setPosition(cart.x - cart.displayWidth - 20, this.cameras.main.height - 40);
 
-    book.on('pointerdown', () => {
-      book.setTint(0xcccccc);
-      this.showInventory();
-    });
-    book.on('pointerup', () => book.clearTint());
-    
-    cart.on('pointerdown', () => cart.setTint(0xcccccc));
-    cart.on('pointerup', () => {
-      cart.clearTint();
-      // Add shop functionality here
-    });
-  }
-  
-  showInventory() {
-    // Create inventory display
-    const inventoryWindow = this.add.graphics()
-      .fillStyle(0x032e3e, 0.9)
-      .fillRoundedRect(200, 100, 1520, 880, 20)
-      .setDepth(15);
-    
-    const closeButton = this.add.text(1800, 120, 'X', { 
-      fontSize: '48px', 
-      color: '#ffffff',
-      stroke: '#000000',
-      strokeThickness: 4
-    }).setInteractive().setDepth(16);
-    
-    closeButton.on('pointerup', () => {
-      inventoryWindow.destroy();
-      closeButton.destroy();
-      // Destroy any inventory items displayed
-    });
-    
-    // Display caught fish
-    if (this.inventory.length === 0) {
-      this.add.text(960, 540, 'No fish caught yet!', { 
-        fontSize: '48px', 
-        color: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 4
-      }).setOrigin(0.5).setDepth(16);
-    } else {
-      // Display fish in inventory
-      // Implement grid or list display of caught fish
+  setupBackground() {
+    // Create parallax background layers
+    for (let i = 1; i <= 8; i++) {
+      this.add.sprite(960, 540, 'game', `bg${i}.png`)
+        .setScrollFactor(i * 0.1)
+        .setDepth(i);
     }
   }
-  
-  setupFishing() {
-    this.input.on('pointerdown', () => {
-      if (this.gameState === 'idle') {
-        this.startCasting();
-      } else if (this.gameState === 'waiting') {
-        // Too early - scare fish away
-        this.bobber.setTexture('fishing_bobber');
-        this.time.delayedCall(500, () => {
-          this.resetFishing();
-          this.showMessage('Too early! Fish got away!');
-        });
-      } else if (this.gameState === 'reeling') {
-        this.catchFish();
-      }
+
+  setupCharacter() {
+    // Character animations
+    this.anims.create({
+      key: 'idle',
+      frames: [
+        { key: 'characters', frame: 'char_idle1.png' },
+        { key: 'characters', frame: 'char_idle2.png' }
+      ],
+      frameRate: 2,
+      repeat: -1
     });
+
+    this.anims.create({
+      key: 'casting',
+      frames: [
+        { key: 'characters', frame: 'char_throw.png' },
+        { key: 'characters', frame: 'char_throw2.png' }
+      ],
+      frameRate: 5,
+      repeat: 0
+    });
+
+    this.char = this.add.sprite(960, 640, 'characters')
+      .play('idle')
+      .setDepth(10);
   }
-  
+
+  setupFishing() {
+    // Fishing line and bobber
+    this.fishingLine = this.add.graphics();
+    this.bobber = this.add.sprite(960, 740, 'game', 'fishing_bobber.png');
+    
+    // Fishing state machine
+    this.gameState = 'idle';
+  }
+
   startCasting() {
     this.gameState = 'casting';
-    this.char.setTexture('Char_throw');
-    
-    this.time.delayedCall(300, () => {
-      this.char.setTexture('Char_throw2');
-      this.fishingLine.setVisible(true);
-      this.bobber.setVisible(true);
-      
-      // Animate casting
-      const castTween = this.tweens.add({
-        targets: [this.bobber, this.fishingLine],
-        y: `+=300`,
-        duration: 500,
-        ease: 'Power2',
-        onComplete: () => {
-          this.gameState = 'waiting';
-          this.startWaitingForFish();
-        }
-      });
-    });
-  }
-  
-  startWaitingForFish() {
-    // Random wait time between 2-8 seconds
-    const waitTime = Phaser.Math.Between(2000, 8000);
-    
-    this.waitTimer = this.time.delayedCall(waitTime, () => {
-      if (this.gameState === 'waiting') {
-        this.bobber.setTexture('splash');
-        this.gameState = 'reeling';
-        
-        // Fish will escape if not caught soon
-        this.escapeTimer = this.time.delayedCall(1500, () => {
-          if (this.gameState === 'reeling') {
-            this.resetFishing();
-            this.showMessage('Too slow! Fish got away!');
-          }
-        });
-      }
-    });
-  }
-  
-  catchFish() {
-    this.gameState = 'caught';
-    this.char.setTexture('Char_reel');
-    
-    // Determine which fish was caught based on rarity
-    const rand = Math.random();
-    let cumulativeRarity = 0;
-    let caughtFish = null;
-    
-    for (const fish of this.fishTypes) {
-      cumulativeRarity += fish.rarity;
-      if (rand <= cumulativeRarity) {
-        caughtFish = fish;
-        break;
-      }
-    }
-    
-    // Add to inventory and score
-    this.inventory.push(caughtFish);
-    this.score += caughtFish.points;
-    this.scoreText.setText(`Score: ${this.score}`);
-    
-    // Show fish caught
-    const fishSprite = this.add.image(this.bobber.x, this.bobber.y, caughtFish.texture)
-      .setScale(0.5)
-      .setDepth(9);
-    
-    // Animate reeling in
-    this.tweens.add({
-      targets: [this.bobber, this.fishingLine, fishSprite],
-      y: `-=300`,
-      duration: 800,
-      ease: 'Power2',
-      onComplete: () => {
-        this.char.setTexture('Char_catch');
-        this.showMessage(`Caught a ${caughtFish.name}! +${caughtFish.points}pts`);
-        
-        this.time.delayedCall(1000, () => {
-          fishSprite.destroy();
-          this.resetFishing();
-        });
-      }
-    });
-  }
-  
-  resetFishing() {
-    this.fishingLine.setVisible(false);
-    this.bobber.setVisible(false);
-    this.bobber.setTexture('fishing_bobber');
-    
-    if (this.waitTimer) this.waitTimer.destroy();
-    if (this.escapeTimer) this.escapeTimer.destroy();
-    
-    this.gameState = 'idle';
-    this.char.setTexture('Char_idle1');
-  }
-  
-  showMessage(text) {
-    const message = this.add.text(960, 200, text, {
-      fontSize: '36px',
-      color: '#ffffff',
-      stroke: '#000000',
-      strokeThickness: 4,
-      backgroundColor: '#032e3e',
-      padding: { x: 20, y: 10 }
-    }).setOrigin(0.5).setDepth(20);
-    
-    this.tweens.add({
-      targets: message,
-      alpha: 0,
-      delay: 1500,
-      duration: 500,
-      onComplete: () => message.destroy()
+    this.char.play('casting').once('animationcomplete', () => {
+      // Casting animation complete logic
     });
   }
 
-  update(_, delta) {
-    // Update background animations
-    this.swayTime = (this.swayTime || 0) + delta * 0.001;
-    this.trees.x = this.cameras.main.centerX + Math.sin(this.swayTime) * 5;
-    this.foilage.x = this.cameras.main.centerX + Math.sin(this.swayTime + 1) * 5;
-    this.clouds.x += 0.8;
-    if (this.clouds.x > this.cameras.main.width + 200) this.clouds.x = -200;
-    
-    // Update fishing line position to follow character
+  update() {
+    // Update fishing line position
     if (this.fishingLine.visible) {
-      this.fishingLine.x = this.char.x;
-      this.fishingLine.y = this.char.y + 50;
-      this.fishingLine.setRotation(Phaser.Math.Angle.BetweenPoints(
-        { x: this.char.x, y: this.char.y + 50 },
-        { x: this.bobber.x, y: this.bobber.y }
-      ));
-      this.fishingLine.setDisplaySize(10, Phaser.Math.Distance.Between(
-        this.char.x, this.char.y + 50,
-        this.bobber.x, this.bobber.y
-      ));
+      this.fishingLine.clear()
+        .lineStyle(2, 0xffffff)
+        .lineBetween(
+          this.char.x, this.char.y + 50,
+          this.bobber.x, this.bobber.y
+        );
     }
   }
 }
-
 
 const config = {
   type: Phaser.AUTO,
   width: 1920,
   height: 1080,
-  backgroundColor: '#000000',
-  scene: [MainMenu, FishingScene], // Updated scene list
-  scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH
-  },
-  audio: {
-    disableWebAudio: false
-  }
+  scene: [MainMenu, FishingScene],
+  // ... other config settings
 };
 
 new Phaser.Game(config);
